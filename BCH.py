@@ -4,7 +4,7 @@
 import galois
 import numpy as np
 
-VERBOSE = True
+VERBOSE = False
 
 def is_bit_set(x, n):
     return (x & (1 << n))
