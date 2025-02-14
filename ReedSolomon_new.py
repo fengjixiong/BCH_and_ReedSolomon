@@ -145,7 +145,6 @@ class ReedSolomonCoder():
         
         return C_x[0:self.k], E
 
-
     def Decode(self, message_received):
         '''
         time field method
@@ -314,8 +313,65 @@ def Test3():
     print('----')
     print('')
 
+def Test4():
+    rsHelper = ReedSolomonCoder(n=31, t=3)
+    GF = rsHelper.GF
+    a = rsHelper.a
+    # len(message) = k = n-2t = 25， MSB first
+    message_received = GF([a**12] + [0] * 24 + [0, 0, a**19, a**3, a**26, a**3])
+    message_decoded, noise = rsHelper.Decode_with_erase(message_received, erase=[4, 5])
+    print('')
+    print('----')
+    print('')
+
+
+def BerlekampMassey():
+    GF = galois.GF(2 ** 5)
+    GF.repr('power')
+    a = GF.primitive_element
+    S = [a**15, a**16, a**17, a**18, a**27, a**7]
+    #S = [a**6, a**26, a**15, a**4, a**19, a**30]
+    L = 0
+    cx = galois.Poly([1], field=GF)
+    px = galois.Poly([1], field=GF)
+    l = 1
+    dm = GF(1)
+    for k in range(6):
+        d = S[5-k]
+        for i in range(L):
+            #print('-- cx[i]', cx.coeffs[-(i+2)])
+            #print('-- S[k-i]', S[5-(k-i-1)])
+            d = d + cx.coeffs[-(i+2)] * S[5-(k-i-1)]
+        if d == 0:
+            l = l + 1
+        else:
+            if 2* L >= (k+1):
+                cx = cx - d / dm * px * galois.Poly.Degrees([l], coeffs=[1], field=GF)
+                l = l + 1
+            else:
+                tx = cx
+                cx = cx - d / dm * px * galois.Poly.Degrees([l], coeffs=[1], field=GF)
+                L = k + 1 - L
+                px = tx
+                dm = d
+                l = 1
+        print('--------')
+        print(f'k={k+1}')
+        print('Sk=', S[5-k])
+        print('dk=', d)
+        print(f'cx={cx}')
+        print(f'L={L}')
+        print(f'px={px}')
+        print(f'l={l}')
+        print('dm=', dm)
+
+    print('结果：', cx)
+
+def Test5():
+    BerlekampMassey()
+
 if __name__ == '__main__':
     #Test1()
     #Test2()
-    Test3()
+    Test5()
 
